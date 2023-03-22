@@ -2,6 +2,6 @@ POST http://localhost:3001/api/notes
 Content-Type: application/json
 
 {  
-    "content": "university of helsinki is good",
+    "content": "Helsinki is doing a great job.",
     "important": true
 }
