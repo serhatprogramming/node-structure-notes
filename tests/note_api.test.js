@@ -10,10 +10,9 @@ const { initialNotes, nonExistingId, notesInDb } = require("./test_helper");
 
 beforeEach(async () => {
   await Note.deleteMany({});
-  let noteObject = new Note(initialNotes[0]);
-  await noteObject.save();
-  noteObject = new Note(initialNotes[1]);
-  await noteObject.save();
+  const noteObjects = initialNotes.map((note) => new Note(note));
+  const savePromises = noteObjects.map((note) => note.save());
+  Promise.all(savePromises);
 });
 
 test("notes are returned as json", async () => {
