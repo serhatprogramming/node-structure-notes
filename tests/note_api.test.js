@@ -10,9 +10,7 @@ const { initialNotes, nonExistingId, notesInDb } = require("./test_helper");
 
 beforeEach(async () => {
   await Note.deleteMany({});
-  const noteObjects = initialNotes.map((note) => new Note(note));
-  const savePromises = noteObjects.map((note) => note.save());
-  Promise.all(savePromises);
+  await Note.insertMany(initialNotes);
 });
 
 test("notes are returned as json", async () => {
@@ -90,6 +88,12 @@ test("note without content is not added", async () => {
   await api.post("/api/notes").send(newNote).expect(400);
   const notes = await notesInDb();
   expect(notes).toHaveLength(initialNotes.length);
+});
+
+test("fails with statuscode 400 id is invalid", async () => {
+  const invalidId = "5a3d5da59070081a82a3445";
+
+  await api.get(`/api/notes/${invalidId}`).expect(400);
 });
 
 afterAll(async () => {

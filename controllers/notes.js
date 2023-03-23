@@ -1,17 +1,25 @@
 const notesRouter = require("express").Router();
 const Note = require("../models/note");
 
-notesRouter.get("/", async (request, response) => {
-  const notes = await Note.find({});
-  response.json(notes);
+notesRouter.get("/", async (request, response, next) => {
+  try {
+    const notes = await Note.find({});
+    response.json(notes);
+  } catch (error) {
+    next(error);
+  }
 });
 
-notesRouter.get("/:id", async (request, response) => {
-  const note = await Note.findById(request.params.id);
-  if (note) {
-    response.json(note);
-  } else {
-    response.status(404).end();
+notesRouter.get("/:id", async (request, response, next) => {
+  try {
+    const note = await Note.findById(request.params.id);
+    if (note) {
+      response.json(note);
+    } else {
+      response.status(404).end();
+    }
+  } catch (error) {
+    next(error);
   }
 });
 
@@ -30,9 +38,13 @@ notesRouter.post("/", async (request, response, next) => {
   }
 });
 
-notesRouter.delete("/:id", async (request, response) => {
-  await Note.findByIdAndRemove(request.params.id);
-  response.status(204).end();
+notesRouter.delete("/:id", async (request, response, next) => {
+  try {
+    await Note.findByIdAndRemove(request.params.id);
+    response.status(204).end();
+  } catch (error) {
+    next(error);
+  }
 });
 
 notesRouter.put("/:id", (request, response, next) => {
