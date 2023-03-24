@@ -5,8 +5,15 @@ const app = require("../app");
 const api = supertest(app);
 
 const Note = require("../models/note");
+const bcrypt = require("bcrypt");
+const User = require("../models/user");
 
-const { initialNotes, nonExistingId, notesInDb } = require("./test_helper");
+const {
+  initialNotes,
+  nonExistingId,
+  notesInDb,
+  usersInDb,
+} = require("./test_helper");
 
 beforeEach(async () => {
   await Note.deleteMany({});
@@ -94,6 +101,39 @@ test("fails with statuscode 400 id is invalid", async () => {
   const invalidId = "5a3d5da59070081a82a3445";
 
   await api.get(`/api/notes/${invalidId}`).expect(400);
+});
+
+describe("when there is initially one user in db", () => {
+  beforeEach(async () => {
+    await User.deleteMany({});
+
+    const passwordHash = await bcrypt.hash("secret", 10);
+    const user = new User({ username: "root", passwordHash });
+
+    await user.save();
+  });
+
+  test("creation of a fresh user with success", async () => {
+    const usersAtStart = await usersInDb();
+
+    const user = {
+      username: "jdoe",
+      name: "John Doe",
+      password: "password",
+    };
+
+    await api
+      .post("/api/users")
+      .send(user)
+      .expect(201)
+      .expect("Content-Type", /application\/json/);
+
+    const usersAtEnd = await usersInDb();
+    expect(usersAtEnd.length).toBe(usersAtStart.length + 1);
+
+    const userNames = usersAtEnd.map((user) => user.username);
+    expect(userNames).toContain("root");
+  });
 });
 
 afterAll(async () => {
